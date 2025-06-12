@@ -100,7 +100,7 @@ const ExpensesScreen = () => {
                     }
                     setShowDatePicker(false);
                   }}
-                  style={{ marginTop: 5, width: '50%' , alignSelf: 'center', marginBottom: 10}}
+                  style={styles.doneButton}
                 >
                   Done
                 </Button>
@@ -127,7 +127,7 @@ const ExpensesScreen = () => {
                 <Button
                   mode="contained"
                   onPress={() => setShowTypePicker(false)}
-                  style={{ marginTop: 3, width: '50%', alignSelf: 'center' }}
+                  style={styles.doneButton}
                 >
                   Done
                 </Button>
@@ -155,7 +155,7 @@ const ExpensesScreen = () => {
                 <Button
                   mode="contained"
                   onPress={() => setShowIssuerPicker(false)}
-                  style={{ marginTop: 10, width: '50%', alignSelf: 'center' }}
+                  style={styles.doneButton}
                 >
                   Done
                 </Button>
@@ -183,7 +183,7 @@ const ExpensesScreen = () => {
                 <Button
                   mode="contained"
                   onPress={() => setShowCategoryPicker(false)}
-                  style={{ marginTop: 10, width: '50%', alignSelf: 'center' }}
+                  style={styles.doneButton}
                 >
                   Done
                 </Button>
@@ -261,12 +261,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     overflow: 'hidden',
   },
-  picker: {
-    height: 44,
+  picker: { marginTop: 5,
     width: '100%',
-    color: '#000',
-    backgroundColor: 'white',
-  },
+    alignSelf: 'center',
+    marginBottom: 10},
+
+  doneButton: { marginTop: 5,
+    width: '50%',
+    alignSelf: 'center',
+    marginBottom: 10},
 });
 
 export default ExpensesScreen; 
