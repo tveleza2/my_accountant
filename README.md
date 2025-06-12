@@ -1,19 +1,76 @@
-# README
+# Airbnb Finance Manager
 
-## About
+A cross-platform mobile application for managing Airbnb stays and expenses across iOS, Android, and web platforms.
 
-This is the official Wails Vue-TS template.
+## Features
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+- Track Airbnb stays and bookings
+- Manage expenses and income
+- Generate financial reports
+- Cross-platform support (iOS, Android, Web)
+- Offline support
+- Data synchronization
 
-## Live Development
+## Tech Stack
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+- React Native
+- TypeScript
+- Expo
+- React Navigation
+- AsyncStorage for local data persistence
+- React Native Paper for UI components
 
-## Building
+## Getting Started
 
-To build a redistributable, production mode package, use `wails build`.
+### Prerequisites
+
+- Node.js (v14 or later)
+- npm or yarn
+- Expo CLI
+- iOS Simulator (for Mac users)
+- Android Studio (for Android development)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+3. Start the development server:
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+### Development
+
+- `npm start` or `yarn start` - Start the Expo development server
+- `npm run ios` or `yarn ios` - Run on iOS simulator
+- `npm run android` or `yarn android` - Run on Android emulator
+- `npm run web` or `yarn web` - Run on web browser
+
+## Project Structure
+
+```
+src/
+  ├── components/     # Reusable UI components
+  ├── screens/        # Screen components
+  ├── navigation/     # Navigation configuration
+  ├── services/       # API and business logic
+  ├── store/         # State management
+  ├── types/         # TypeScript type definitions
+  ├── utils/         # Utility functions
+  └── assets/        # Images, fonts, etc.
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
