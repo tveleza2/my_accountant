@@ -23,6 +23,9 @@ const ExpensesScreen = () => {
   const [tempDate, setTempDate] = React.useState<Date | null>(null);
   const [issuers, setIssuers] = React.useState<Issuer[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
+  const [showTypePicker, setShowTypePicker] = React.useState(false);
+  const [showIssuerPicker, setShowIssuerPicker] = React.useState(false);
+  const [showCategoryPicker, setShowCategoryPicker] = React.useState(false);
 
   React.useEffect(() => {
     fetchIssuers().then(setIssuers);
@@ -97,50 +100,95 @@ const ExpensesScreen = () => {
                     }
                     setShowDatePicker(false);
                   }}
-                  style={{ marginTop: 10, width: '50%' , alignSelf: 'center'}}
+                  style={{ marginTop: 5, width: '50%' , alignSelf: 'center', marginBottom: 10}}
                 >
                   Done
                 </Button>
               </View>
             )}
-            <Text style={styles.label}>Select Type</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={form.type}
-                onValueChange={value => setForm(f => ({ ...f, type: value as Transaction['type'] }))}
-                style={{ backgroundColor: 'lightgray', height: 50, marginBottom: 10 }}
-              >
-                <Picker.Item label="Expense" value="expense" />
-                <Picker.Item label="Income" value="income" />
-                <Picker.Item label="Cost" value="cost" />
-              </Picker>
-            </View>
-            <Text style={styles.label}>Select Issuer</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={form.issuer_id}
-                onValueChange={value => setForm(f => ({ ...f, issuer_id: value }))}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select issuer..." value={undefined} />
-                {issuers.map(issuer => (
-                  <Picker.Item key={issuer.id} label={issuer.name} value={issuer.id} />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.label}>Select Category</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={form.category_id}
-                onValueChange={value => setForm(f => ({ ...f, category_id: value }))}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select category..." value={undefined} />
-                {categories.map(category => (
-                  <Picker.Item key={category.id} label={category.name} value={category.id} />
-                ))}
-              </Picker>
-            </View>
+            <Button
+              mode="outlined"
+              onPress={() => setShowTypePicker(true)}
+              style={styles.input}
+            >
+              {form.type ? `Type: ${form.type}` : 'Select type'}
+            </Button>
+            {showTypePicker && (
+              <View>
+                <Picker
+                  selectedValue={form.type}
+                  onValueChange={value => setForm(f => ({ ...f, type: value as Transaction['type'] }))}
+                  style={{ width: '100%', height: 150, backgroundColor: 'white' }}
+                >
+                  <Picker.Item label="Expense" value="expense" />
+                  <Picker.Item label="Income" value="income" />
+                  <Picker.Item label="Cost" value="cost" />
+                </Picker>
+                <Button
+                  mode="contained"
+                  onPress={() => setShowTypePicker(false)}
+                  style={{ marginTop: 3, width: '50%', alignSelf: 'center' }}
+                >
+                  Done
+                </Button>
+              </View>
+            )}
+            <Button
+              mode="outlined"
+              onPress={() => setShowIssuerPicker(true)}
+              style={styles.input}
+            >
+              {form.issuer_id ? `Issuer: ${issuers.find(i => i.id === form.issuer_id)?.name}` : 'Select issuer'}
+            </Button>
+            {showIssuerPicker && (
+              <View>
+                <Picker
+                  selectedValue={form.issuer_id}
+                  onValueChange={value => setForm(f => ({ ...f, issuer_id: value }))}
+                  style={{ width: '100%', height: 200, backgroundColor: 'white' }}
+                >
+                  <Picker.Item label="Select issuer..." value={undefined} />
+                  {issuers.map(issuer => (
+                    <Picker.Item key={issuer.id} label={issuer.name} value={issuer.id} />
+                  ))}
+                </Picker>
+                <Button
+                  mode="contained"
+                  onPress={() => setShowIssuerPicker(false)}
+                  style={{ marginTop: 10, width: '50%', alignSelf: 'center' }}
+                >
+                  Done
+                </Button>
+              </View>
+            )}
+            <Button
+              mode="outlined"
+              onPress={() => setShowCategoryPicker(true)}
+              style={styles.input}
+            >
+              {form.category_id ? `Category: ${categories.find(c => c.id === form.category_id)?.name}` : 'Select category'}
+            </Button>
+            {showCategoryPicker && (
+              <View>
+                <Picker
+                  selectedValue={form.category_id}
+                  onValueChange={value => setForm(f => ({ ...f, category_id: value }))}
+                  style={{ width: '100%', height: 200, backgroundColor: 'white' }}
+                >
+                  <Picker.Item label="Select category..." value={undefined} />
+                  {categories.map(category => (
+                    <Picker.Item key={category.id} label={category.name} value={category.id} />
+                  ))}
+                </Picker>
+                <Button
+                  mode="contained"
+                  onPress={() => setShowCategoryPicker(false)}
+                  style={{ marginTop: 10, width: '50%', alignSelf: 'center' }}
+                >
+                  Done
+                </Button>
+              </View>
+            )}
             <TextInput
               label="Concept"
               value={form.concept}
@@ -216,6 +264,8 @@ const styles = StyleSheet.create({
   picker: {
     height: 44,
     width: '100%',
+    color: '#000',
+    backgroundColor: 'white',
   },
 });
 
