@@ -1,15 +1,21 @@
 import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { Transaction, Issuer, Category } from '../types/models';
 import DatePickerComponent from './DatePickerComponent';
 import TypePickerComponent from './TypePickerComponent';
 import IssuerPickerComponent from './IssuerPickerComponent';
 import CategoryPickerComponent from './CategoryPickerComponent';
+import { createTransaction } from '../services/database';
+
+// Define the form state type that all components will use
+export type FormState = Omit<Partial<Transaction>, 'amount'> & {
+  amount?: string;
+};
 
 interface CreateExpenseFormProps {
-  form: Partial<Transaction>;
-  setForm: React.Dispatch<React.SetStateAction<Partial<Transaction>>>;
+  form: FormState;
+  setForm: React.Dispatch<React.SetStateAction<FormState>>;
   showDatePicker: boolean;
   setShowDatePicker: React.Dispatch<React.SetStateAction<boolean>>;
   showTypePicker: boolean;
@@ -20,10 +26,55 @@ interface CreateExpenseFormProps {
   setShowCategoryPicker: React.Dispatch<React.SetStateAction<boolean>>;
   issuers: Issuer[];
   categories: Category[];
-  onAddExpense: () => void;
+  onSuccess: () => void;
 }
 
-const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({ form, setForm, showDatePicker, setShowDatePicker, showTypePicker, setShowTypePicker, showIssuerPicker, setShowIssuerPicker, showCategoryPicker, setShowCategoryPicker, issuers, categories, onAddExpense }) => {
+const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({
+  form,
+  setForm,
+  showDatePicker,
+  setShowDatePicker,
+  showTypePicker,
+  setShowTypePicker,
+  showIssuerPicker,
+  setShowIssuerPicker,
+  showCategoryPicker,
+  setShowCategoryPicker,
+  issuers,
+  categories,
+  onSuccess
+}) => {
+  const handleSubmit = async () => {
+    if (!form.amount || !form.date || !form.type || !form.issuer_id || !form.category_id) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    const amount = parseFloat(form.amount);
+    if (isNaN(amount)) {
+      Alert.alert('Error', 'Please enter a valid amount');
+      return;
+    }
+
+    try {
+      const transaction: Omit<Transaction, 'id'> = {
+        date: form.date,
+        type: form.type,
+        issuer_id: form.issuer_id,
+        category_id: form.category_id,
+        amount,
+        concept: form.concept ?? '',
+        invoice_image: form.invoice_image ?? '',
+      };
+      
+      await createTransaction(transaction);
+      onSuccess();
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      Alert.alert('Error', 'Failed to create transaction');
+    }
+  };
+
   return (
     <ScrollView>
       <TextInput
@@ -34,22 +85,50 @@ const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({ form, setForm, sh
       />
       <TextInput
         label="Amount"
-        value={form.amount?.toString() || ''}
-        onChangeText={text => setForm(f => ({ ...f, amount: parseFloat(text) }))}
+        value={form.amount || ''}
+        // onChangeText={text => {
+        //   // Allow empty string, numbers, single decimal point, and negative sign
+        //   if (text === '' || /^-?\d*\.?\d*$/.test(text)) {
+        //     setForm(f => ({ ...f, amount: text }));
+        //   }
+        // }
+        // }
         keyboardType="numeric"
         style={styles.input}
       />
-      <DatePickerComponent form={form} setForm={setForm} showDatePicker={showDatePicker} setShowDatePicker={setShowDatePicker} />
-      <TypePickerComponent form={form} setForm={setForm} showTypePicker={showTypePicker} setShowTypePicker={setShowTypePicker} />
-      <IssuerPickerComponent form={form} setForm={setForm} showIssuerPicker={showIssuerPicker} setShowIssuerPicker={setShowIssuerPicker} issuers={issuers} />
-      <CategoryPickerComponent form={form} setForm={setForm} showCategoryPicker={showCategoryPicker} setShowCategoryPicker={setShowCategoryPicker} categories={categories} />
+      <DatePickerComponent
+        form={form as Partial<Transaction>}
+        setForm={setForm as React.Dispatch<React.SetStateAction<Partial<Transaction>>>}
+        showDatePicker={showDatePicker}
+        setShowDatePicker={setShowDatePicker}
+      />
+      <TypePickerComponent
+        form={form as Partial<Transaction>}
+        setForm={setForm as React.Dispatch<React.SetStateAction<Partial<Transaction>>>}
+        showTypePicker={showTypePicker}
+        setShowTypePicker={setShowTypePicker}
+      />
+      <IssuerPickerComponent
+        form={form as Partial<Transaction>}
+        setForm={setForm as React.Dispatch<React.SetStateAction<Partial<Transaction>>>}
+        showIssuerPicker={showIssuerPicker}
+        setShowIssuerPicker={setShowIssuerPicker}
+        issuers={issuers}
+      />
+      <CategoryPickerComponent
+        form={form as Partial<Transaction>}
+        setForm={setForm as React.Dispatch<React.SetStateAction<Partial<Transaction>>>}
+        showCategoryPicker={showCategoryPicker}
+        setShowCategoryPicker={setShowCategoryPicker}
+        categories={categories}
+      />
       <TextInput
         label="Concept"
         value={form.concept}
         onChangeText={text => setForm(f => ({ ...f, concept: text }))}
         style={styles.input}
       />
-      <Button mode="contained" onPress={onAddExpense}>
+      <Button mode="contained" onPress={handleSubmit}>
         Add Expense
       </Button>
     </ScrollView>

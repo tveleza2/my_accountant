@@ -46,7 +46,7 @@ const IssuerPickerComponent = ({ form, setForm, showIssuerPicker, setShowIssuerP
         onPress={() => setShowIssuerPicker(!showIssuerPicker)}
         style={styles.input}
       >
-        {form.issuer_id ? `Issuer: ${issuers.find(i => i.id === form.issuer_id)?.name}` : 'Select issuer'}
+        {form.issuer_id ? `Issuer: ${issuers.find(i => i.id == form.issuer_id)?.name}` : 'Select issuer'}
       </Button>
       {showIssuerPicker && (
         <View style={styles.pickerContainer}>
@@ -55,7 +55,7 @@ const IssuerPickerComponent = ({ form, setForm, showIssuerPicker, setShowIssuerP
             onValueChange={value => setForm((f: Partial<Transaction>) => ({ ...f, issuer_id: value }))}
             style={styles.picker}
           >
-            <Picker.Item label="Select issuer..." value={undefined} />
+            <Picker.Item label="Select issuer..." value={""} />
             {issuers.map(issuer => (
               <Picker.Item key={issuer.id} label={issuer.name} value={issuer.id} />
             ))}

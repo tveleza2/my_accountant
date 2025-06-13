@@ -4,7 +4,7 @@ import { Issuer, Category, Transaction } from '../types/models';
 
 let db: SQLite.SQLiteDatabase | null = null;
 
-export const initDatabase = async (dbPath: string): Promise<void> => {
+export const initDatabase = async (dbName: string): Promise<void> => {
   try {
     // Ensure the SQLite directory exists
     const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
@@ -19,8 +19,8 @@ export const initDatabase = async (dbPath: string): Promise<void> => {
     
 
     // Open the database using the standard API
-    db = SQLite.openDatabase('debugtest.db');
-    console.log('Database opened with name: debugtest.db');
+    db = SQLite.openDatabase(dbName);
+    console.log('Database opened with name: ', dbName);
 
     // Enable WAL mode before any transactions
     await new Promise<void>((resolve, reject) => {
@@ -56,6 +56,7 @@ export const initDatabase = async (dbPath: string): Promise<void> => {
             name TEXT NOT NULL,
             description TEXT
           );`);
+
           
         tx.executeSql(`CREATE TABLE IF NOT EXISTS expense (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

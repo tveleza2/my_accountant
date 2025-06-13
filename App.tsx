@@ -18,12 +18,15 @@ const Tab = createBottomTabNavigator();
 export default function App() {
   useEffect(() => {
     const checkAndInitDb = async () => {
-      const dbPath = `${FileSystem.documentDirectory}SQLite/accounting.db`;
+      const dbName = 'accounting.db';
+      const dbPath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
       const dbInfo = await FileSystem.getInfoAsync(dbPath);
-      await deleteDb(dbPath);
-      await initDatabase(dbPath);
       if (!dbInfo.exists) {
-        await initDatabase(dbPath);
+        await initDatabase(dbName);
+      } else {
+        console.log('Database already exists, deleting...');
+        await deleteDb(dbPath);
+        await initDatabase(dbName);
       }
     };
     checkAndInitDb();

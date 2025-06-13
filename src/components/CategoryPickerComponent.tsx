@@ -46,7 +46,7 @@ const CategoryPickerComponent = ({ form, setForm, showCategoryPicker, setShowCat
         onPress={() => setShowCategoryPicker(!showCategoryPicker)}
         style={styles.input}
       >
-        {form.category_id ? `Category: ${categories.find(c => c.id === form.category_id)?.name}` : 'Select category'}
+        {form.category_id ? `Category: ${categories.find(c => c.id == form.category_id)?.name}` : 'Select category'}
       </Button>
       {showCategoryPicker && (
         <View style={styles.pickerContainer}>
@@ -55,7 +55,7 @@ const CategoryPickerComponent = ({ form, setForm, showCategoryPicker, setShowCat
             onValueChange={value => setForm((f: Partial<Transaction>) => ({ ...f, category_id: value }))}
             style={styles.picker}
           >
-            <Picker.Item label="Select category..." value={undefined} />
+            <Picker.Item label="Select category..." value={""} />
             {categories.map(category => (
               <Picker.Item key={category.id} label={category.name} value={category.id} />
             ))}

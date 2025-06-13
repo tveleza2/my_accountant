@@ -6,17 +6,18 @@ import { Transaction, Issuer, Category } from '../types/models';
 import CreateExpenseForm from '../components/CreateExpenseForm';
 import CreateIssuerForm from '../components/CreateIssuerForm';
 import CreateCategoryForm from '../components/CreateCategoryForm';
+import { FormState } from '../components/CreateExpenseForm';
 
 const ExpensesScreen = () => {
   const [expenses, setExpenses] = React.useState<Transaction[]>([]);
   const [modalVisible, setModalVisible] = React.useState(false);
   const [issuerModalVisible, setIssuerModalVisible] = React.useState(false);
   const [categoryModalVisible, setCategoryModalVisible] = React.useState(false);
-  const [form, setForm] = React.useState<Partial<Transaction>>({
+  const [form, setForm] = React.useState<FormState>({
     concept: '',
-    amount: 0,
+    amount: '',
     date: new Date().toISOString().slice(0, 10),
-    type: 'expense',
+    type: undefined,
     invoice_image: '',
     issuer_id: undefined,
     category_id: undefined,
@@ -45,14 +46,35 @@ const ExpensesScreen = () => {
   }, []);
 
   const handleAddExpense = async () => {
-    const newExpense = await createTransaction(form as Transaction);
+    if (
+      !form.amount ||
+      !form.date ||
+      !form.type ||
+      form.issuer_id === undefined ||
+      form.category_id === undefined
+    ) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    const transaction: Omit<Transaction, 'id'> = {
+      date: form.date,
+      type: form.type,
+      issuer_id: form.issuer_id,
+      category_id: form.category_id,
+      amount: parseFloat(form.amount),
+      concept: form.concept ?? '',
+      invoice_image: form.invoice_image ?? '',
+    };
+
+    const newExpense = await createTransaction(transaction);
     setExpenses(e => [...e, newExpense]);
     setModalVisible(false);
     setForm({
       concept: '',
-      amount: 0,
+      amount: '',
       date: new Date().toISOString().slice(0, 10),
-      type: 'expense',
+      type: undefined,
       invoice_image: '',
       issuer_id: undefined,
       category_id: undefined,
@@ -116,7 +138,7 @@ const ExpensesScreen = () => {
             setShowCategoryPicker={setShowCategoryPicker}
             issuers={issuers}
             categories={categories}
-            onAddExpense={handleAddExpense}
+            onSuccess={handleAddExpense}
           />
         </Modal>
         <Modal visible={issuerModalVisible} onDismiss={() => setIssuerModalVisible(false)} contentContainerStyle={{backgroundColor: 'white', padding: 20, margin: 20}}>
