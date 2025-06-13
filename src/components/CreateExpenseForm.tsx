@@ -85,14 +85,14 @@ const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({
       />
       <TextInput
         label="Amount"
-        value={form.amount || ''}
-        // onChangeText={text => {
-        //   // Allow empty string, numbers, single decimal point, and negative sign
-        //   if (text === '' || /^-?\d*\.?\d*$/.test(text)) {
-        //     setForm(f => ({ ...f, amount: text }));
-        //   }
-        // }
-        // }
+        // value={form.amount || ''}
+        onChangeText={text => {
+          // Allow empty string, numbers, single decimal point, and negative sign
+          if (text === '' || /^-?\d*\.?\d*$/.test(text)) {
+            setForm(f => ({ ...f, amount: text }));
+          }
+        }
+        }
         keyboardType="numeric"
         style={styles.input}
       />
@@ -121,12 +121,6 @@ const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({
         showCategoryPicker={showCategoryPicker}
         setShowCategoryPicker={setShowCategoryPicker}
         categories={categories}
-      />
-      <TextInput
-        label="Concept"
-        value={form.concept}
-        onChangeText={text => setForm(f => ({ ...f, concept: text }))}
-        style={styles.input}
       />
       <Button mode="contained" onPress={handleSubmit}>
         Add Expense

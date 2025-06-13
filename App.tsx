@@ -23,10 +23,6 @@ export default function App() {
       const dbInfo = await FileSystem.getInfoAsync(dbPath);
       if (!dbInfo.exists) {
         await initDatabase(dbName);
-      } else {
-        console.log('Database already exists, deleting...');
-        await deleteDb(dbPath);
-        await initDatabase(dbName);
       }
     };
     checkAndInitDb();
