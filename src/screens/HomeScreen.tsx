@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, Card, Title, Paragraph } from 'react-native-paper';
+import { Text, Card } from 'react-native-paper';
+import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 const HomeScreen = () => {
   return (
@@ -9,30 +10,30 @@ const HomeScreen = () => {
       
       <View style={styles.cardsContainer}>
         <Card style={styles.card}>
-          <Card.Content>
-            <Title>Total Income</Title>
-            <Paragraph>$0.00</Paragraph>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleLarge" style={{ textAlign: 'center' }}>Total Income</Text>
+            <Text variant="bodyMedium" style={{ textAlign: 'center' }}>$0.00</Text>
           </Card.Content>
         </Card>
 
         <Card style={styles.card}>
-          <Card.Content>
-            <Title>Total Expenses</Title>
-            <Paragraph>$0.00</Paragraph>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleLarge" style={{ textAlign: 'center' }}>Total Expenses</Text>
+            <Text variant="bodyMedium" style={{ textAlign: 'center' }}>$0.00</Text>
           </Card.Content>
         </Card>
 
         <Card style={styles.card}>
-          <Card.Content>
-            <Title>Net Profit</Title>
-            <Paragraph>$0.00</Paragraph>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleLarge" style={{ textAlign: 'center' }}>Net Profit</Text>
+            <Text variant="bodyMedium" style={{ textAlign: 'center' }}>$0.00</Text>
           </Card.Content>
         </Card>
 
         <Card style={styles.card}>
-          <Card.Content>
-            <Title>Active Stays</Title>
-            <Paragraph>0</Paragraph>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleLarge" style={{ textAlign: 'center' }}>Monthly Balance</Text>
+            <Text variant="bodyMedium" style={{ textAlign: 'center' }}>0</Text>
           </Card.Content>
         </Card>
       </View>
@@ -58,8 +59,13 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '48%',
+    height: 200,
     marginBottom: 16,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  cardContent: { justifyContent: 'center', alignItems: 'center'}
 });
 
 export default HomeScreen; 

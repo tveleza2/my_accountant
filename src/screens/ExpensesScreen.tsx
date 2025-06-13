@@ -1,15 +1,17 @@
 import React from 'react';
-import { View, StyleSheet, FlatList, ScrollView } from 'react-native';
+import { View, StyleSheet, FlatList, ScrollView, Alert } from 'react-native';
 import { Text, Card, FAB, Chip, Modal, Portal, Button, TextInput } from 'react-native-paper';
-import { createTransaction, fetchIssuers, fetchCategories } from '../services/api';
+import { createTransaction, getIssuers, getCategories, createIssuer, createCategory, initDatabase } from '../services/database';
 import { Transaction, Issuer, Category } from '../types/models';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import CreateExpenseForm from '../components/CreateExpenseForm';
+import CreateIssuerForm from '../components/CreateIssuerForm';
+import CreateCategoryForm from '../components/CreateCategoryForm';
 
 const ExpensesScreen = () => {
   const [expenses, setExpenses] = React.useState<Transaction[]>([]);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [issuerModalVisible, setIssuerModalVisible] = React.useState(false);
+  const [categoryModalVisible, setCategoryModalVisible] = React.useState(false);
   const [form, setForm] = React.useState<Partial<Transaction>>({
     concept: '',
     amount: 0,
@@ -19,18 +21,63 @@ const ExpensesScreen = () => {
     issuer_id: undefined,
     category_id: undefined,
   });
+  const [issuerForm, setIssuerForm] = React.useState<Partial<Issuer>>({
+    name: '',
+  });
   const [showDatePicker, setShowDatePicker] = React.useState(false);
-  const [tempDate, setTempDate] = React.useState<Date | null>(null);
   const [issuers, setIssuers] = React.useState<Issuer[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
   const [showTypePicker, setShowTypePicker] = React.useState(false);
   const [showIssuerPicker, setShowIssuerPicker] = React.useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = React.useState(false);
+  const [showOptions, setShowOptions] = React.useState(false);
+  const [categoryForm, setCategoryForm] = React.useState<Partial<Category>>({
+    name: '',
+    description: '',
+  });
 
   React.useEffect(() => {
-    fetchIssuers().then(setIssuers);
-    fetchCategories().then(setCategories);
+    // Fetch issuers and categories from local DB
+    getIssuers().then(setIssuers);
+    getCategories().then(setCategories);
+    // Optionally, fetch expenses/transactions if you want to display them
+    // getTransactions().then(setExpenses);
   }, []);
+
+  const handleAddExpense = async () => {
+    const newExpense = await createTransaction(form as Transaction);
+    setExpenses(e => [...e, newExpense]);
+    setModalVisible(false);
+    setForm({
+      concept: '',
+      amount: 0,
+      date: new Date().toISOString().slice(0, 10),
+      type: 'expense',
+      invoice_image: '',
+      issuer_id: undefined,
+      category_id: undefined,
+    });
+  };
+
+  const handleAddIssuer = async () => {
+    if (issuerForm.name) {
+      console.log('Creating issuer:', issuerForm.name);
+      
+      const newIssuer = await createIssuer(issuerForm.name);
+      setIssuers(i => [...i, newIssuer]);
+      setIssuerModalVisible(false);
+      setIssuerForm({ name: '' });
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (categoryForm.name) {
+      const newCategory = await createCategory(categoryForm.name, categoryForm.description || '');
+      setCategories(c => [...c, newCategory]);
+      setCategoryModalVisible(false);
+      setCategoryForm({ name: '', description: '' });
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -56,161 +103,52 @@ const ExpensesScreen = () => {
 
       <Portal>
         <Modal visible={modalVisible} onDismiss={() => setModalVisible(false)} contentContainerStyle={{backgroundColor: 'white', padding: 20, margin: 20}}>
-          <ScrollView>
-            <TextInput
-              label="Description"
-              value={form.concept}
-              onChangeText={text => setForm(f => ({ ...f, concept: text }))}
-              style={styles.input}
-            />
-            <TextInput
-              label="Amount"
-              value={form.amount?.toString() || ''}
-              onChangeText={text => setForm(f => ({ ...f, amount: parseFloat(text) }))}
-              keyboardType="numeric"
-              style={styles.input}
-            />
-            <Button
-              mode="outlined"
-              onPress={() => {
-                setTempDate(form.date ? new Date(form.date) : new Date());
-                setShowDatePicker(true);
-              }}
-              style={styles.input}
-            >
-              {form.date ? `Date: ${form.date}` : 'Pick a date'}
-            </Button>
-            {showDatePicker && (
-              <View>
-                <DateTimePicker
-                  value={tempDate || (form.date ? new Date(form.date) : new Date())}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(_, selectedDate) => {
-                    if (selectedDate) {
-                      setTempDate(selectedDate);
-                    }
-                  }}
-                />
-                <Button
-                  mode="contained"
-                  onPress={() => {
-                    if (tempDate) {
-                      setForm(f => ({ ...f, date: tempDate.toISOString().slice(0, 10) }));
-                    }
-                    setShowDatePicker(false);
-                  }}
-                  style={styles.doneButton}
-                >
-                  Done
-                </Button>
-              </View>
-            )}
-            <Button
-              mode="outlined"
-              onPress={() => setShowTypePicker(true)}
-              style={styles.input}
-            >
-              {form.type ? `Type: ${form.type}` : 'Select type'}
-            </Button>
-            {showTypePicker && (
-              <View>
-                <Picker
-                  selectedValue={form.type}
-                  onValueChange={value => setForm(f => ({ ...f, type: value as Transaction['type'] }))}
-                  style={{ width: '100%', height: 150, backgroundColor: 'white' }}
-                >
-                  <Picker.Item label="Expense" value="expense" />
-                  <Picker.Item label="Income" value="income" />
-                  <Picker.Item label="Cost" value="cost" />
-                </Picker>
-                <Button
-                  mode="contained"
-                  onPress={() => setShowTypePicker(false)}
-                  style={styles.doneButton}
-                >
-                  Done
-                </Button>
-              </View>
-            )}
-            <Button
-              mode="outlined"
-              onPress={() => setShowIssuerPicker(true)}
-              style={styles.input}
-            >
-              {form.issuer_id ? `Issuer: ${issuers.find(i => i.id === form.issuer_id)?.name}` : 'Select issuer'}
-            </Button>
-            {showIssuerPicker && (
-              <View>
-                <Picker
-                  selectedValue={form.issuer_id}
-                  onValueChange={value => setForm(f => ({ ...f, issuer_id: value }))}
-                  style={{ width: '100%', height: 200, backgroundColor: 'white' }}
-                >
-                  <Picker.Item label="Select issuer..." value={undefined} />
-                  {issuers.map(issuer => (
-                    <Picker.Item key={issuer.id} label={issuer.name} value={issuer.id} />
-                  ))}
-                </Picker>
-                <Button
-                  mode="contained"
-                  onPress={() => setShowIssuerPicker(false)}
-                  style={styles.doneButton}
-                >
-                  Done
-                </Button>
-              </View>
-            )}
-            <Button
-              mode="outlined"
-              onPress={() => setShowCategoryPicker(true)}
-              style={styles.input}
-            >
-              {form.category_id ? `Category: ${categories.find(c => c.id === form.category_id)?.name}` : 'Select category'}
-            </Button>
-            {showCategoryPicker && (
-              <View>
-                <Picker
-                  selectedValue={form.category_id}
-                  onValueChange={value => setForm(f => ({ ...f, category_id: value }))}
-                  style={{ width: '100%', height: 200, backgroundColor: 'white' }}
-                >
-                  <Picker.Item label="Select category..." value={undefined} />
-                  {categories.map(category => (
-                    <Picker.Item key={category.id} label={category.name} value={category.id} />
-                  ))}
-                </Picker>
-                <Button
-                  mode="contained"
-                  onPress={() => setShowCategoryPicker(false)}
-                  style={styles.doneButton}
-                >
-                  Done
-                </Button>
-              </View>
-            )}
-            <TextInput
-              label="Concept"
-              value={form.concept}
-              onChangeText={text => setForm(f => ({ ...f, concept: text }))}
-              style={styles.input}
-            />
-            <Button mode="contained" onPress={async () => {
-              const newExpense = await createTransaction(form as Transaction);
-              setExpenses(e => [...e, newExpense]);
-              setModalVisible(false);
-            }}>
-              Add Expense
-            </Button>
-          </ScrollView>
+          <CreateExpenseForm
+            form={form}
+            setForm={setForm}
+            showDatePicker={showDatePicker}
+            setShowDatePicker={setShowDatePicker}
+            showTypePicker={showTypePicker}
+            setShowTypePicker={setShowTypePicker}
+            showIssuerPicker={showIssuerPicker}
+            setShowIssuerPicker={setShowIssuerPicker}
+            showCategoryPicker={showCategoryPicker}
+            setShowCategoryPicker={setShowCategoryPicker}
+            issuers={issuers}
+            categories={categories}
+            onAddExpense={handleAddExpense}
+          />
+        </Modal>
+        <Modal visible={issuerModalVisible} onDismiss={() => setIssuerModalVisible(false)} contentContainerStyle={{backgroundColor: 'white', padding: 20, margin: 20}}>
+          <CreateIssuerForm
+            form={issuerForm}
+            setForm={setIssuerForm}
+            onAddIssuer={handleAddIssuer}
+          />
+        </Modal>
+        <Modal visible={categoryModalVisible} onDismiss={() => setCategoryModalVisible(false)} contentContainerStyle={{backgroundColor: 'white', padding: 20, margin: 20}}>
+          <CreateCategoryForm
+            form={categoryForm}
+            setForm={setCategoryForm}
+            onAddCategory={handleAddCategory}
+          />
         </Modal>
       </Portal>
 
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        onPress={() => setModalVisible(true)}
-      />
+      <View style={styles.fabContainer}>
+        {showOptions && (
+          <View style={styles.optionsList}>
+            <Button mode="text" onPress={() => { setModalVisible(true); setShowOptions(false); }}>Create Expense</Button>
+            <Button mode="text" onPress={() => { setIssuerModalVisible(true); setShowOptions(false); }}>Create Issuer</Button>
+            <Button mode="text" onPress={() => { setCategoryModalVisible(true); setShowOptions(false); }}>Create Category</Button>
+          </View>
+        )}
+        <FAB
+          style={styles.fab}
+          icon="plus"
+          onPress={() => setShowOptions(!showOptions)}
+        />
+      </View>
     </View>
   );
 };
@@ -244,6 +182,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+    borderRadius: 100,
   },
   input: {
     borderRadius: 12,
@@ -255,21 +194,50 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 4,
   },
-  pickerWrapper: {
-    borderRadius: 12,
+  pickerContainer: {
+    minHeight: 120,
+    paddingVertical: 8,
+    paddingHorizontal: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: 'white',
+    borderRadius: 12,
     marginBottom: 10,
-    overflow: 'hidden',
+    marginTop: -5,
+    gap: 0,
   },
-  picker: { marginTop: 5,
+  picker: {
     width: '100%',
+    height: 150,
+    backgroundColor: 'white',
+    marginTop: 0,
+    marginBottom: 0,
+    justifyContent: 'center',
+  },
+  doneButton: {
+    marginTop: 10,
+    marginBottom: 4,
+    width: '60%',
     alignSelf: 'center',
-    marginBottom: 10},
-
-  doneButton: { marginTop: 5,
-    width: '50%',
-    alignSelf: 'center',
-    marginBottom: 10},
+  },
+  fabContainer: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    margin: 16,
+  },
+  optionsList: {
+    position: 'absolute',
+    bottom: 80,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
 });
 
 export default ExpensesScreen; 
