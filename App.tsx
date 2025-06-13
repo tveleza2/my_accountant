@@ -19,10 +19,31 @@ export default function App() {
   useEffect(() => {
     const checkAndInitDb = async () => {
       const dbName = 'accounting.db';
-      const dbPath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
+      const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
+      const dbPath = `${sqliteDir}/${dbName}`;
+
+      // First ensure SQLite directory exists
+      const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+      }
+
+      // Then check for database file
       const dbInfo = await FileSystem.getInfoAsync(dbPath);
-      if (!dbInfo.exists) {
+      
+      try {
+        // Initialize database in these cases:
+        // 1. Database doesn't exist
+        // 2. Database exists but might be corrupted (we'll try to initialize it anyway)
         await initDatabase(dbName);
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+        if (dbInfo.exists) {
+          // If initialization failed and db exists, it might be corrupted
+          // Delete it and try again
+          await FileSystem.deleteAsync(dbPath);
+          await initDatabase(dbName);
+        }
       }
     };
     checkAndInitDb();

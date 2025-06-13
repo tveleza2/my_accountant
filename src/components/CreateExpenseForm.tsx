@@ -1,6 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Alert } from 'react-native';
+import { ScrollView, StyleSheet, Alert, Image, View } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
+import * as ImagePicker from 'expo-image-picker';
 import { Transaction, Issuer, Category } from '../types/models';
 import DatePickerComponent from './DatePickerComponent';
 import TypePickerComponent from './TypePickerComponent';
@@ -44,6 +45,31 @@ const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({
   categories,
   onSuccess
 }) => {
+  const handleImagePick = async () => {
+    try {
+      // Request permission first
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please grant camera roll permissions to upload images.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+      
+      if (!result.canceled && result.assets[0]) {
+        setForm(f => ({ ...f, invoice_image: result.assets[0].uri }));
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
   const handleSubmit = async () => {
     if (!form.amount || !form.date || !form.type || !form.issuer_id || !form.category_id) {
       Alert.alert('Error', 'Please fill in all required fields');
@@ -122,7 +148,30 @@ const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({
         setShowCategoryPicker={setShowCategoryPicker}
         categories={categories}
       />
-      <Button mode="contained" onPress={handleSubmit}>
+      
+      <Button 
+        mode="outlined" 
+        onPress={handleImagePick}
+        style={styles.button}
+      >
+        {form.invoice_image ? 'Change Receipt Image' : 'Add Receipt Image'}
+      </Button>
+      
+      {form.invoice_image && (
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: form.invoice_image }} 
+            style={styles.image} 
+            resizeMode="contain"
+          />
+        </View>
+      )}
+
+      <Button 
+        mode="contained" 
+        onPress={handleSubmit}
+        style={styles.button}
+      >
         Add Expense
       </Button>
     </ScrollView>
@@ -135,6 +184,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     marginBottom: 10,
   },
+  button: {
+    marginVertical: 10,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginVertical: 10,
+    backgroundColor: '#f5f5f5',
+    padding: 10,
+    borderRadius: 8,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+  },
 });
 
-export default CreateExpenseForm; 
+export default CreateExpenseForm;
