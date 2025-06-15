@@ -205,7 +205,7 @@ export const getTransactions = async (): Promise<Transaction[]> => {
   });
 };
 
-export const createTransaction = async (tx: Omit<Transaction, 'id'>): Promise<Transaction> => {
+export const createExpense = async (tx: Omit<Transaction, 'id'>): Promise<Transaction> => {
   if (!db) {
     throw new Error('Database not initialized');
   }

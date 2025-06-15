@@ -7,7 +7,7 @@ import DatePickerComponent from './DatePickerComponent';
 import TypePickerComponent from './TypePickerComponent';
 import IssuerPickerComponent from './IssuerPickerComponent';
 import CategoryPickerComponent from './CategoryPickerComponent';
-import { createTransaction } from '../services/database';
+import { createExpense } from '../services/database';
 
 // Define the form state type that all components will use
 export type FormState = Omit<Partial<Transaction>, 'amount'> & {
@@ -93,7 +93,7 @@ const CreateExpenseForm: React.FC<CreateExpenseFormProps> = ({
         invoice_image: form.invoice_image ?? '',
       };
       
-      await createTransaction(transaction);
+      await createExpense(transaction);
       onSuccess();
     } catch (error) {
       console.error('Error creating transaction:', error);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, FlatList, ScrollView, Alert } from 'react-native';
 import { Text, Card, FAB, Chip, Modal, Portal, Button, TextInput } from 'react-native-paper';
-import { createTransaction, getIssuers, getCategories, createIssuer, createCategory, initDatabase } from '../services/database';
+import { createExpense, getIssuers, getCategories, createIssuer, createCategory, initDatabase } from '../services/database';
 import { Transaction, Issuer, Category } from '../types/models';
 import CreateExpenseForm from '../components/CreateExpenseForm';
 import CreateIssuerForm from '../components/CreateIssuerForm';
@@ -67,7 +67,7 @@ const ExpensesScreen = () => {
       invoice_image: form.invoice_image ?? '',
     };
 
-    const newExpense = await createTransaction(transaction);
+    const newExpense = await createExpense(transaction);
     setExpenses(e => [...e, newExpense]);
     setModalVisible(false);
     setForm({
